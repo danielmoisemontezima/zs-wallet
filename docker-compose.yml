@@ -1,8 +1,7 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:13
+    container_name: posgres-db
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
@@ -11,9 +10,12 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - zs_docker_network
 
   api:
-    build: .
+    image: zs-wallet:latest
+    container_name: api-wallet
     ports:
       - "8080:8080"
     depends_on:
@@ -26,6 +28,12 @@ services:
       DB_NAME: wallet
       API_PORT: 8080
       JWT_SECRET: your-secret-key
+    networks:
+      - zs_docker_network
 
 volumes:
   postgres_data:
+
+networks:
+  zs_docker_network:
+    external: true
