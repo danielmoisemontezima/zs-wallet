@@ -1,25 +1,18 @@
-# Stage 1: Build the Go application
+# Build stage
 FROM golang:1.24-alpine AS builder
-
 WORKDIR /app
-
 COPY go.mod go.sum ./
+RUN go mod tidy
 RUN go mod download
-
 COPY . .
-
 RUN CGO_ENABLED=0 GOOS=linux go build -o /wallet-backend ./cmd/api
 
-# Stage 2: Create the final image
+# Final stage
 FROM alpine:latest
-
-WORKDIR /root/
-
-COPY --from=builder /wallet-backend .
-
-# Copy config files if needed, e.g., .env
-# COPY .env .
+WORKDIR /
+COPY --from=builder /wallet-backend /wallet-backend
+# Add this line to copy the migrations directory into the final image
+COPY migrations ./migrations
 
 EXPOSE 8080
-
-CMD ["./wallet-backend"]
+CMD ["/wallet-backend"]
